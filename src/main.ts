@@ -1,0 +1,109 @@
+import k from "./kaplayCtx";
+import { COLORS } from "./constants";
+import { formatScore } from "./utils";
+import gameManager from "./gameManager";
+
+k.loadSprite("cursor", "./graphics/cursor.png")
+k.loadSprite("menu", "./graphics/menu.png")
+k.loadSprite("background", "./graphics/background.png")
+k.loadFont("nes", "./fonts/nintendo-nes-font/nintendo-nes-font.ttf")
+k.loadSound("gun-shot", "./sounds/gun-shot.wav")
+
+k.scene("main-menu", () => {
+    k.add([k.sprite("menu")]);
+
+    k.add([
+        k.text("CLICK TO START", {font: "nes", size: 8}), k.z(2), k.anchor("center"), k.pos(k.center().x, k.center().y + 40),
+    ]);
+
+    let bestScore: number = k.getData("best-score") || 0;
+    if (!bestScore) {
+        bestScore = 0;
+        k.setData("best-score", 0);
+    }
+
+    k.add([
+        k.text(`TOP SCORE = ${formatScore(bestScore, 6)}`, {
+            font: "nes",
+            size: 8,
+        }),
+        k.pos(55, 184),
+        k.color(COLORS.RED),
+    ]);
+
+    k.onClick(() => {
+        k.go("game");
+    });
+});
+
+k.scene("game", () => {
+    k.setCursor("none");
+    k.add([k.rect(k.width(), k.height()), k.color(COLORS.BLUE), "sky" ]);
+    k.add([k.sprite("background"), k.pos(0, -10), k.z(1)]);
+
+    const score = k.add([
+        k.text(formatScore(0, 6), { font: "nes", size: 8 }),
+        k.pos(192, 197),
+        k.z(2),
+    ]);
+
+    const roundCount = k.add([
+        k.text("1", { font: "nes", size: 8 }),
+        k.pos(42, 182),
+        k.z(2),
+        k.color(COLORS.RED),
+    ]);
+
+    const duckIcons = k.add([k.pos(95, 198)]);
+    let duckIconPosX = 1;
+    for ( let i = 0; i < 10; i++ ) {
+        duckIcons.add([k.rect(7, 9), k.pos(duckIconPosX, 0), `duckIcon-${i}`]);
+        duckIconPosX += 8
+    }
+
+    const bulletUIMask = k.add([k.rect(0, 8), 
+        k.pos(25, 198), 
+        k.z(2), 
+        k.color(0, 0, 0)
+    ]);
+
+    const roundStartController = gameManager.onStateEnter("round-start", () => {})
+
+    const cursor = k.add([
+        k.sprite("cursor"),
+        k.anchor("center"),
+        k.pos(),
+        k.z(3),
+    ]);
+
+    k.onClick(() => {
+        if (gameManager.state === "hunt-start" && !gameManager.isGamePaused) {
+            if (gameManager.nbBulletsLeft > 0) k.play("gun-shot", { volume: 0.25 });
+            gameManager.nbBulletsLeft--;
+        }
+    });
+
+    k.onUpdate(() => {
+        score.text = formatScore(gameManager.currentScore, 6);
+        switch (gameManager.nbBulletsLeft) {
+            case 3:
+                bulletUIMask.width = 0;
+                break;
+            case 2:
+                bulletUIMask.width = 8;
+                break;
+            case 1:
+                bulletUIMask.width  = 15;
+                break;
+            default:
+                bulletUIMask.width = 22;
+
+        }
+
+        cursor.moveTo(k.mousePos());
+    })
+});
+
+k.scene("game-over", () => {});
+
+k.go("main-menu");
