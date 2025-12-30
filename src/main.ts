@@ -96,6 +96,10 @@ k.scene("game", () => {
         gameManager.enterState("hunt-start");
     });
 
+    const roundEndController = gameManager.onStateEnter("round-start", () => {
+        //todo
+    })
+
     const cursor = k.add([
         k.sprite("cursor"),
         k.anchor("center"),
