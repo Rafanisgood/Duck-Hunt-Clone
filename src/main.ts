@@ -1,19 +1,21 @@
 import k from "./kaplayCtx";
-import { COLORS } from "./constants";
+import { COLORS, fontConfig } from "./constants";
 import { formatScore } from "./utils";
 import gameManager from "./gameManager";
 
 k.loadSprite("cursor", "./graphics/cursor.png")
 k.loadSprite("menu", "./graphics/menu.png")
 k.loadSprite("background", "./graphics/background.png")
+k.loadSprite("text-box", "./graphics/text-box.png")
 k.loadFont("nes", "./fonts/nintendo-nes-font/nintendo-nes-font.ttf")
 k.loadSound("gun-shot", "./sounds/gun-shot.wav")
+k.loadSound("ui-appear", "./sounds/ui-appear.wav")
 
 k.scene("main-menu", () => {
     k.add([k.sprite("menu")]);
 
     k.add([
-        k.text("CLICK TO START", {font: "nes", size: 8}), k.z(2), k.anchor("center"), k.pos(k.center().x, k.center().y + 40),
+        k.text("CLICK TO START", fontConfig), k.z(2), k.anchor("center"), k.pos(k.center().x, k.center().y + 40),
     ]);
 
     let bestScore: number = k.getData("best-score") || 0;
@@ -42,13 +44,13 @@ k.scene("game", () => {
     k.add([k.sprite("background"), k.pos(0, -10), k.z(1)]);
 
     const score = k.add([
-        k.text(formatScore(0, 6), { font: "nes", size: 8 }),
+        k.text(formatScore(0, 6), fontConfig),
         k.pos(192, 197),
         k.z(2),
     ]);
 
     const roundCount = k.add([
-        k.text("1", { font: "nes", size: 8 }),
+        k.text("1",  fontConfig),
         k.pos(42, 182),
         k.z(2),
         k.color(COLORS.RED),
@@ -67,7 +69,32 @@ k.scene("game", () => {
         k.color(0, 0, 0)
     ]);
 
-    const roundStartController = gameManager.onStateEnter("round-start", () => {})
+    const roundStartController = gameManager.onStateEnter("round-start", async (isFirstRound: Boolean) => {
+        if (!isFirstRound) gameManager.preySpeed += 20;
+        k.play("ui-appear");
+        gameManager.currentRoundNb++;
+        roundCount.text = String(gameManager.currentRoundNb);
+        const textBox = k.add([
+            k.sprite("text-box"),
+            k.anchor("center"),
+            k.pos(k.center().x, k.center().y - 50),
+            k.z(2)
+        ]);
+        textBox.add([
+            k.text("ROUND", fontConfig),
+            k.anchor("center"),
+            k.pos(0, -10),
+        ]);
+        textBox.add([
+            k.text(String(gameManager.currentRoundNb), fontConfig), 
+            k.anchor("center"),
+            k.pos(0, 4)
+        ]);
+
+        await k.wait(1.5);
+        k.destroy(textBox);
+        gameManager.enterState("hunt-start");
+    });
 
     const cursor = k.add([
         k.sprite("cursor"),
