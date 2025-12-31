@@ -90,7 +90,16 @@ export default function makeDog(position: Vec2) {
                 )
             },
             async catchFallingDuck(this: GameObj) {
-                this.play("catch")
+                this.play("catch");
+                k.play("successful-hunt");
+                await this.slideUpAndDown();
+                gameManager.enterState("hunt-end");
+            },
+            async mockPlayer(this: GameObj) {
+                laughingSound.play()
+                this.play("mock")
+                await this.slideUpAndDown();
+                gameManager.enterState("hunt-end")
             }
         },
     ]);

@@ -2,6 +2,8 @@ import k from "./kaplayCtx";
 import { COLORS, fontConfig } from "./constants";
 import { formatScore } from "./utils";
 import gameManager from "./gameManager";
+import makeDog from "./entities/dog";
+import type { Vec2 } from "kaplay";
 
 k.loadSprite("dog", "./graphics/dog.png", {
     sliceX: 4,
@@ -25,6 +27,7 @@ k.loadSound("ui-appear", "./sounds/ui-appear.wav")
 k.loadSound("sniffing", "./sounds/sniffing.wav")
 k.loadSound("laughing", "./sounds/laughing.wav")
 k.loadSound("barking", "./sounds/barking.wav")
+k.loadSound("successful-hunt", "./sounds/successful-hunt.wav")
 
 k.scene("main-menu", () => {
     k.add([k.sprite("menu")]);
@@ -83,6 +86,9 @@ k.scene("game", () => {
         k.z(2), 
         k.color(0, 0, 0)
     ]);
+
+    const dog = makeDog(k.vec2(0, k.center().y));
+    dog.searchForDucks();
 
     const roundStartController = gameManager.onStateEnter("round-start", async (isFirstRound: Boolean) => {
         if (!isFirstRound) gameManager.preySpeed += 20;
@@ -155,7 +161,17 @@ k.scene("game", () => {
         }
 
         cursor.moveTo(k.mousePos());
-    })
+    });
+
+    k.onSceneLeave(() => {
+        roundStartController.cancel();
+        roundEndController.cancel();
+        huntStartController.cancel();
+        huntEndController.cancel();
+        duckHuntedController.cancel();
+        duckEscapedController.cancel();
+        gameManager.resetGameState();
+    });
 });
 
 k.scene("game-over", () => {});
