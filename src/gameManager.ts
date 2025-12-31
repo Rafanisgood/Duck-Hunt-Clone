@@ -7,6 +7,8 @@ function makeGameManager() {
             "cutscene",
             "round-start",
             "round-end",
+            "hunt-start",
+            "hunt-end",
             "duck-hunted",
             "duck-escaped",
         ]),
