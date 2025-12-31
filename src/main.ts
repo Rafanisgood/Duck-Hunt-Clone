@@ -298,9 +298,7 @@ k.scene("special-scene", () => {
         k.pos(k.center()),
   ]);
 
-  k.wait(2, () => {
-    k.go("main-menu");
-  });
+  k.wait(2)
 })
 
 k.go("main-menu");
