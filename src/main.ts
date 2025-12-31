@@ -119,7 +119,7 @@ k.scene("game", () => {
     "round-start",
     async (isFirstRound) => {
 
-      if (!isFirstRound) gameManager.preySpeed += 16.667;
+      if (!isFirstRound) gameManager.preySpeed += 25;
 
       if (gameManager.currentRoundNb === 20 && !isFirstRound) gameManager.preySpeed += 50;
 
